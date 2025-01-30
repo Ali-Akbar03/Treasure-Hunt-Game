@@ -1,187 +1,64 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <stdbool.h>
+# How-to-play
+Here's how to play the Treasure Hunt Game:
 
-#define GRID_SIZE 5
-#define TREASURES 3
-#define TRAPS 3
-#define POWER_UPS 2
-#define MAX_MOVES 20
-#define INITIAL_HEALTH 3
+### **Objective:**
+Navigate a grid to find treasures (`T`), avoid traps (`X`), and collect power-ups (`+`). You need to do this while managing your health and moves. You win if you find all the treasures, or your score is calculated based on your performance when the game ends.
 
-// Function prototypes
-void initializeGrid(char grid[GRID_SIZE][GRID_SIZE], bool revealed[GRID_SIZE][GRID_SIZE]);
-void placeItems(char grid[GRID_SIZE][GRID_SIZE], char item, int count);
-void displayGrid(char grid[GRID_SIZE][GRID_SIZE], bool revealed[GRID_SIZE][GRID_SIZE], int playerX, int playerY, int computerX, int computerY);
-bool isValidMove(int x, int y);
-int playGame(char grid[GRID_SIZE][GRID_SIZE], bool revealed[GRID_SIZE][GRID_SIZE]);
-void computerMove(char grid[GRID_SIZE][GRID_SIZE], bool revealed[GRID_SIZE][GRID_SIZE], int *computerX, int *computerY);
+### **Game Setup:**
+- The game takes place on a 5x5 grid.
+- There are 3 treasures, 3 traps, and 2 power-ups randomly placed on the grid.
+- You start with 3 health points and a total of 20 moves.
+- The game runs in turns, with both you and the computer taking moves.
 
-int main() {
-    char grid[GRID_SIZE][GRID_SIZE];
-    bool revealed[GRID_SIZE][GRID_SIZE] = {false};
-    srand(time(NULL));
+### **Game Controls:**
+1. **Move Your Character (Player)**: 
+   - Use the following keys to move:
+     - `W` or `w` → Move **Up** (North).
+     - `A` or `a` → Move **Left** (West).
+     - `S` or `s` → Move **Down** (South).
+     - `D` or `d` → Move **Right** (East).
 
-    initializeGrid(grid, revealed);
-    placeItems(grid, 'T', TREASURES); // Place treasures
-    placeItems(grid, 'X', TRAPS);     // Place traps
-    placeItems(grid, '+', POWER_UPS); // Place power-ups
+2. **Actions When Moving**:
+   - If you land on a treasure (`T`), you'll collect it and gain points.
+   - If you land on a trap (`X`), you'll lose health. If you have a power-up (`+`), you can use it to avoid losing health.
+   - If you land on a power-up (`+`), you collect it, which you can later use to survive traps.
+   - If you land on an empty space (`.`), nothing happens.
 
-    printf("Welcome to the Treasure Hunt Game!\n");
-    printf("Navigate the grid to find treasures (T), avoid traps (X), and collect power-ups (+).\n");
-    printf("You have %d moves to find treasures and avoid traps!\n\n", MAX_MOVES);
+3. **Computer Moves**:
+   - The computer moves randomly after your turn and interacts with the grid (either finding a treasure, triggering a trap, or finding a power-up).
 
-    int score = playGame(grid, revealed);
+### **During the Game:**
+- After each move, the grid is updated and displayed. You can see your current location, the computer's location, and which cells you have revealed.
+- You'll be informed of what happens when you move:
+  - You find a treasure or power-up.
+  - You hit a trap, losing health or using a power-up to survive.
+  - You land on an empty cell (nothing happens).
+  
+- The game continues for 20 moves or until you lose all your health.
 
-    printf("Game Over! Your final score is: %d\n", score);
-    return 0;
-}
+### **Winning & Scoring**:
+- **Win Condition**: If you find all 3 treasures, you win early and the game ends with a victory.
+- **Scoring**: 
+   - **Each treasure** you find gives you 10 points.
+   - **Each power-up** gives you 5 points.
+   - **Remaining health** gives you 10 points for each health point left.
 
-void initializeGrid(char grid[GRID_SIZE][GRID_SIZE], bool revealed[GRID_SIZE][GRID_SIZE]) {
-    for (int i = 0; i < GRID_SIZE; i++) {
-        for (int j = 0; j < GRID_SIZE; j++) {
-            grid[i][j] = '.';
-            revealed[i][j] = false;
-        }
-    }
-}
+### **End of the Game**:
+- The game ends either when you find all the treasures or run out of moves or health. At the end, your score is displayed based on how many treasures you found, how many power-ups you collected, and how much health you had left.
 
-void placeItems(char grid[GRID_SIZE][GRID_SIZE], char item, int count) {
-    while (count > 0) {
-        int x = rand() % GRID_SIZE;
-        int y = rand() % GRID_SIZE;
-        if (grid[x][y] == '.') {
-            grid[x][y] = item;
-            count--;
-        }
-    }
-}
+---
 
-void displayGrid(char grid[GRID_SIZE][GRID_SIZE], bool revealed[GRID_SIZE][GRID_SIZE], int playerX, int playerY, int computerX, int computerY) {
-    for (int i = 0; i < GRID_SIZE; i++) {
-        for (int j = 0; j < GRID_SIZE; j++) {
-            if (i == playerX && j == playerY && i == computerX && j == computerY) {
-                printf("PC "); // Both player and computer at the same position
-            } else if (i == playerX && j == playerY) {
-                printf("P "); // Player's position
-            } else if (i == computerX && j == computerY) {
-                printf("C "); // Computer's position
-            } else if (revealed[i][j]) {
-                printf("%c ", grid[i][j]);
-            } else {
-                printf("? ");
-            }
-        }
-        printf("\n");
-    }
-}
+### **Example of a Turn**:
+1. The game shows the current state of the grid, your health, treasures found, and remaining moves.
+2. You input your move (e.g., press `W` to move up).
+3. The game updates the grid and tells you what happened (e.g., "You found a treasure!" or "You hit a trap!").
+4. The computer makes its move, and the game continues.
 
-bool isValidMove(int x, int y) {
-    return x >= 0 && x < GRID_SIZE && y >= 0 && y < GRID_SIZE;
-}
+---
 
-void computerMove(char grid[GRID_SIZE][GRID_SIZE], bool revealed[GRID_SIZE][GRID_SIZE], int *computerX, int *computerY) {
-    int newX, newY;
-    do {
-        newX = *computerX + (rand() % 3 - 1); // Random move: -1, 0, or +1
-        newY = *computerY + (rand() % 3 - 1);
-    } while (!isValidMove(newX, newY));
+### **Tips for Success**:
+- **Move cautiously**: Keep track of where traps and treasures are based on what you've revealed.
+- **Use power-ups wisely**: Power-ups can help you survive traps, so save them for critical situations.
+- **Maximize your moves**: Make every move count to uncover more of the grid, find treasures, and avoid traps.
 
-    revealed[newX][newY] = true; // Mark the new position as revealed
-
-    char cell = grid[newX][newY];
-    printf("Computer moved to (%d, %d): ", newX, newY);
-    if (cell == 'T') {
-        printf("found a treasure!\n");
-    } else if (cell == 'X') {
-        printf("hit a trap!\n");
-    } else if (cell == '+') {
-        printf("found a power-up!\n");
-    } else {
-        printf("nothing here.\n");
-    }
-
-    *computerX = newX;
-    *computerY = newY;
-}
-
-int playGame(char grid[GRID_SIZE][GRID_SIZE], bool revealed[GRID_SIZE][GRID_SIZE]) {
-    int treasuresFound = 0;
-    int powerUps = 0;
-    int health = INITIAL_HEALTH;
-    int moves = MAX_MOVES;
-    int playerX = 0, playerY = 0;
-    int computerX = GRID_SIZE - 1, computerY = GRID_SIZE - 1;
-    char move;
-
-    revealed[playerX][playerY] = true; // Player's starting position is revealed
-    revealed[computerX][computerY] = true; // Computer's starting position is revealed
-
-    while (moves > 0 && health > 0) {
-        printf("\nCurrent Grid:\n");
-        displayGrid(grid, revealed, playerX, playerY, computerX, computerY);
-        printf("\nTreasures found: %d, Power-ups: %d, Health: %d, Remaining moves: %d\n", treasuresFound, powerUps, health, moves);
-        printf("Enter move (W/A/S/D): ");
-        scanf(" %c", &move);
-
-        // Update player's position
-        int newX = playerX;
-        int newY = playerY;
-        if (move == 'W' || move == 'w') newX--;
-        else if (move == 'A' || move == 'a') newY--;
-        else if (move == 'S' || move == 's') newX++;
-        else if (move == 'D' || move == 'd') newY++;
-        else {
-            printf("Invalid move!\n");
-            continue;
-        }
-
-        if (!isValidMove(newX, newY)) {
-            printf("Out of bounds!\n");
-            continue;
-        }
-
-        revealed[newX][newY] = true; // Mark the new position as revealed
-
-        char cell = grid[newX][newY];
-        if (cell == 'T') {
-            printf("You found a treasure!\n");
-            treasuresFound++;
-        } else if (cell == 'X') {
-            if (powerUps > 0) {
-                printf("You hit a trap but used a power-up to survive!\n");
-                powerUps--;
-            } else {
-                printf("You hit a trap! Health reduced by 1.\n");
-                health--;
-            }
-        } else if (cell == '+') {
-            printf("You found a power-up!\n");
-            powerUps++;
-        } else {
-            printf("Nothing here.\n");
-        }
-
-        playerX = newX;
-        playerY = newY;
-
-        // Computer's turn
-        computerMove(grid, revealed, &computerX, &computerY);
-
-        moves--;
-
-        if (treasuresFound == TREASURES) {
-            printf("Congratulations! You found all the treasures!\n");
-            return treasuresFound * 10 + powerUps * 5 + health * 10;
-        }
-    }
-
-    if (health <= 0) {
-        printf("You ran out of health!\n");
-    } else {
-        printf("You ran out of moves!\n");
-    }
-
-    return treasuresFound * 10 + powerUps * 5 + health * 10;
-}
+Now, go ahead and play! Have fun navigating the grid and collecting treasures!
